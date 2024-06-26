@@ -1,31 +1,12 @@
 version: '3.8'
-
 services:
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2019-latest
+  sqlserver:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
     environment:
-        - ACCEPT_EULA=Y
-        - SA_PASSWORD=YourStrong@Passw0rd
-        - MSSQL_PID=Developer
-        - MSSQL_ENABLE_HADR=0
-    ports:
-        - "1433:1433"
+      ACCEPT_EULA : "Y"
+      SA_PASSWORD: "abcd1234!"
+      MSSQL_PID: "Express"
     volumes:
-        - mssql_data:/var/opt/mssql
-        - ./init:/docker-entrypoint-initdb.d
-    command:
-      - /opt/mssql/bin/sqlservr
-      - -T1118
-      - /bin/bash
-      - -c
-      - |
-        /opt/mssql/bin/sqlservr &
-        sleep 30
-        for i in /docker-entrypoint-initdb.d/*.sql
-        do
-        echo "running $i"
-        /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P $$SA_PASSWORD -d master -i $$i
-        done
-        wait
-volumes:
-  mssql_data:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mssql-entrypoint.sh:/mssql-entrypoint.sh
+    command: /bin/bash /mssql-entrypoint.sh
